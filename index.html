@@ -27,9 +27,13 @@
             pointer-events: none; z-index: 99;
         }
         .petal {
-            position: absolute; background-color: #fff1f3;
-            border-radius: 150% 0 150% 150%; opacity: 0.8;
-            filter: blur(0.5px); animation: falling infinite linear;
+            position: absolute; 
+            background-color: #ffc4d4; /* 稍微加深一点的明朗樱花粉 */
+            border-radius: 150% 0 150% 150%; 
+            opacity: 0.9; /* 提高不透明度，让它更显眼 */
+            filter: blur(0.5px); 
+            box-shadow: 0 2px 6px rgba(255, 150, 180, 0.4); /* 核心魔法：加一点点发光的悬浮阴影！ */
+            animation: falling infinite linear;
         }
         @keyframes falling {
             0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
