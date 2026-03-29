@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>此刻是春天 · 春日信箱</title>
+    <style>
+        body {
+            background-color: #e8e2d2;
+            background-image: radial-gradient(#d3cbb8 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: "PingFang SC", "Microsoft YaHei", serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #4a4238;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 花瓣背景环境 */
+        .falling-environment {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+        .petal {
+            position: absolute; background-color: #fff1f3;
+            border-radius: 150% 0 150% 150%; opacity: 0.8;
+            filter: blur(0.5px); animation: falling infinite linear;
+        }
+        @keyframes falling {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* 信封主容器 */
+        .envelope {
+            background: #fdfaf6; padding: 40px; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 450px; width: 85%; position: relative;
+            border: 1px solid #e0d8c8; z-index: 10;
+            transition: transform 0.8s ease, opacity 0.8s ease;
+        }
+
+        .envelope.submitting {
+            opacity: 0; transform: scale(0.9) translateY(20px); pointer-events: none;
+        }
+
+        .stamp {
+            position: absolute; top: 25px; right: 25px;
+            width: 45px; height: 55px; border: 2px dashed #b89f89;
+            color: #b89f89; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-size: 12px; transform: rotate(8deg);
+            font-weight: bold; opacity: 0.8;
+        }
+        h2 { text-align: center; font-weight: 400; letter-spacing: 3px; border-bottom: 1px dashed #d3cbb8; padding-bottom: 20px; margin-top: 0; }
+        .letter-content { line-height: 2; font-size: 16px; margin-top: 30px; text-align: justify; }
+        .signature { text-align: right; font-style: italic; margin-top: 30px; color: #7a6e5d; }
+        .input-area { margin-top: 40px; display: flex; flex-direction: column; }
+        input[type="email"], textarea {
+            width: 100%; padding: 15px; border: 1px solid #d3cbb8;
+            background: rgba(255,255,255,0.5); border-radius: 5px;
+            font-family: inherit; box-sizing: border-box; outline: none;
+            transition: border-color 0.3s;
+        }
+        input[type="email"] { margin-bottom: 15px; }
+        textarea { height: 110px; resize: none; margin-bottom: 20px; }
+        input[type="email"]:focus, textarea:focus { border-color: #8fa998; }
+        
+        button {
+            background: #8fa998; color: white; border: none; padding: 15px;
+            border-radius: 5px; cursor: pointer; font-size: 16px;
+            letter-spacing: 2px; transition: all 0.3s ease;
+        }
+        button:hover { background: #7a9483; transform: translateY(-2px); }
+
+        /* --- 包装盖戳提交动画区域 --- */
+        .packaging-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: none; opacity: 0; transition: opacity 0.5s ease; z-index: 20;
+        }
+        .packaging-overlay.show { opacity: 1; pointer-events: auto; }
+
+        .overlay-envelope {
+            background: #fdfaf6; width: 300px; height: 180px;
+            border-radius: 4px; border: 1px solid #e0d8c8;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative;
+            transform: translateY(50px) scale(0.8);
+            transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .packaging-overlay.show .overlay-envelope { transform: translateY(0) scale(1); }
+
+        .envelope-flap {
+            position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 150px solid transparent; border-right: 150px solid transparent;
+            border-bottom: 100px solid #fdfaf6;
+            filter: drop-shadow(0 -2px 1px rgba(0,0,0,0.05));
+            transform-origin: top; transform: scaleY(-1) translateY(-100px); z-index: 2;
+        }
+        .packaging-overlay.show .envelope-flap { animation: envelope-close 1.5s forwards 0.5s; }
+        @keyframes envelope-close {
+            0% { transform: scaleY(-1) translateY(-100px); }
+            100% { transform: scaleY(1) translateY(0); }
+        }
+
+        .overlay-stamp {
+            position: absolute; top: 40px; right: 40px; width: 70px; height: 70px;
+            border: 3px solid #b89f89; color: #b89f89; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: bold; opacity: 0;
+            transform: scale(3) rotate(-30deg); z-index: 3;
+        }
+        .packaging-overlay.show .overlay-stamp { animation: stamp-drop 0.5s forwards 2.2s; }
+        @keyframes stamp-drop {
+            0% { opacity: 0; transform: scale(3) rotate(-30deg); }
+            70% { opacity: 1; transform: scale(1) rotate(-15deg); filter: blur(0px); }
+            100% { opacity: 0.8; transform: scale(1) rotate(-15deg); filter: blur(0.5px); }
+        }
+
+        .message {
+            text-align: center; position: absolute; bottom: 40px; width: 100%;
+            color: #8fa998; font-weight: bold; opacity: 0;
+            transition: opacity 0.8s ease 3s; z-index: 30;
+        }
+        .packaging-overlay.show .message { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="falling-environment" id="environment"></div>
+
+    <div class="envelope" id="mailboxEnvelope">
+        <div class="stamp">
+            <span>2026</span>
+            <span>春</span>
+        </div>
+        <h2>✉️ 春日信箱</h2>
+        
+        <div class="letter-content">
+            <p>你好，朋友：</p>
+            <p>现在是26年春季，此刻正是春天。抽条的绿芽，绽放的花朵，暖暖的春风，或许还会遇到毛茸茸的小猫，你想要和别人分享你的感受吗？</p>
+            <p>可以是一本喜欢的书，可以是现在的烦恼，随便什么也可以。如果愿意，请写在这里吧，在某个起风的日子，你也许会收到一封回信。</p>
+            <div class="signature">—— 等待回信的春天</div>
+        </div>
+
+        <form id="springForm" action="https://formspree.io/f/xreogwqq" method="POST" class="input-area">
+            <input type="email" name="email" placeholder="你的邮箱（选填，如果你期待我的回信 🕊️）">
+            <textarea name="message" required placeholder="想写点什么呢？... (写下即可释怀，你的秘密很安全)"></textarea>
+            <button type="submit" id="submitBtn">寄往春天</button>
+        </form>
+    </div>
+
+    <div class="packaging-overlay" id="packagingOverlay">
+        <div class="overlay-envelope">
+            <div class="envelope-flap"></div>
+            <div class="overlay-stamp">SENT<br>2026</div>
+        </div>
+        <div class="message" id="successMsg">✨ 信件已化作春风。<br>我会认真阅读，祝你顺遂无虞。</div>
+    </div>
+
+    <script>
+        // 生成花瓣
+        const environment = document.getElementById('environment');
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            const size = Math.random() * 10 + 5 + 'px';
+            petal.style.width = size; petal.style.height = size;
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.animationDuration = Math.random() * 5 + 5 + 's';
+            environment.appendChild(petal);
+            setTimeout(() => { petal.remove(); }, 10000);
+        }
+        setInterval(createPetal, 300);
+
+        // 提交逻辑
+        const form = document.getElementById('springForm');
+        const mailboxEnvelope = document.getElementById('mailboxEnvelope');
+        const packagingOverlay = document.getElementById('packagingOverlay');
+        const btn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            btn.innerText = "打包中...";
+            btn.style.background = "#d3cbb8";
+
+            const data = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: data,
+                headers: { 'Accept': 'application/json' }
+            }).then(response => {
+                if (response.ok) {
+                    mailboxEnvelope.classList.add('submitting');
+                    packagingOverlay.classList.add('show');
+                    setTimeout(() => { form.reset(); }, 2000);
+                } else {
+                    btn.innerText = "邮差迷路了，请重试";
+                    btn.style.background = "#e57373";
+                }
+            }).catch(error => {
+                btn.innerText = "邮差迷路了，请重试";
+                btn.style.background = "#e57373";
+            });
+        });
+    </script>
+</body>
+</html>
